@@ -45,6 +45,11 @@
       "name": "npm",
       "icon": "npm",
       "url": "https://www.npmjs.com/package/seshat-mcp"
+    },
+    {
+      "name": "Menezis",
+      "icon": "building",
+      "url": "https://www.menezis.ai"
     }
   ],
   "navigation": [
