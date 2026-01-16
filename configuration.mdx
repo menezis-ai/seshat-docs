@@ -1,0 +1,219 @@
+---
+title: 'Configuration'
+description: 'Complete configuration reference for SESHAT'
+---
+
+## Environment Variables
+
+SESHAT is configured via environment variables. Create a `.env` file in your project root or pass them directly to the MCP server.
+
+### Required Variables
+
+<ParamField path="ETH_PRIVATE_KEY" type="string" required>
+  Private key of your Ethereum wallet (with `0x` prefix). Used for signing attestations on Base L2.
+
+  ```bash
+  ETH_PRIVATE_KEY=0x0123456789abcdef...
+  ```
+
+  <Warning>
+    Use a dedicated wallet with minimal funds. Never use your main wallet.
+  </Warning>
+</ParamField>
+
+<ParamField path="EAS_SCHEMA_UID" type="string" required>
+  Your registered schema UID on EAS (Ethereum Attestation Service).
+
+  ```bash
+  EAS_SCHEMA_UID=0xabcdef1234567890...
+  ```
+
+  See [EAS Schema Registration](#eas-schema-registration) below.
+</ParamField>
+
+<ParamField path="GIT_HOST_API_URL" type="string" required>
+  API endpoint of your git hosting platform.
+
+  ```bash
+  # GitHub
+  GIT_HOST_API_URL=https://api.github.com
+
+  # GitLab
+  GIT_HOST_API_URL=https://gitlab.com/api/v4
+
+  # Forgejo/Gitea
+  GIT_HOST_API_URL=https://your-instance.com/api/v1
+  ```
+</ParamField>
+
+<ParamField path="GIT_HOST_TOKEN" type="string" required>
+  API token with `read:repo` scope for your git host.
+
+  ```bash
+  GIT_HOST_TOKEN=ghp_xxxxxxxxxxxx
+  ```
+</ParamField>
+
+<ParamField path="OBSIDIAN_ROOT" type="string" required>
+  Absolute path to your Obsidian vault root directory.
+
+  ```bash
+  OBSIDIAN_ROOT=/Users/you/Documents/Vault
+  ```
+</ParamField>
+
+### Optional Variables
+
+<ParamField path="DB_PATH" type="string" default="./data/seshat.db">
+  Path to the SQLite database file.
+
+  ```bash
+  DB_PATH=/var/lib/seshat/ledger.db
+  ```
+</ParamField>
+
+<ParamField path="LOG_LEVEL" type="string" default="info">
+  Logging verbosity. Options: `debug`, `info`, `warn`, `error`.
+
+  ```bash
+  LOG_LEVEL=debug
+  ```
+</ParamField>
+
+### Security Features (Optional)
+
+<ParamField path="ENABLE_TSA" type="boolean" default="false">
+  Enable RFC 3161 timestamps via FreeTSA.
+
+  ```bash
+  ENABLE_TSA=true
+  TSA_URL=https://freetsa.org/tsr
+  ```
+</ParamField>
+
+<ParamField path="ENABLE_IPFS" type="boolean" default="false">
+  Enable encrypted IPFS storage via nft.storage.
+
+  ```bash
+  ENABLE_IPFS=true
+  NFT_STORAGE_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+  ```
+</ParamField>
+
+<ParamField path="ENABLE_PQC" type="boolean" default="false">
+  Enable ANSSI-compliant post-quantum signatures.
+
+  ```bash
+  ENABLE_PQC=true
+  PQC_LEVEL=87  # 44, 65, or 87
+  ```
+
+  | Level | Algorithm | NIST Level | Security |
+  |-------|-----------|------------|----------|
+  | 44 | ML-DSA-44 | 2 | 128-bit |
+  | 65 | ML-DSA-65 | 3 | 192-bit |
+  | 87 | ML-DSA-87 | 5 | 256-bit |
+</ParamField>
+
+## EAS Schema Registration
+
+Before using SESHAT, you must register an attestation schema on EAS.
+
+### Schema Definition
+
+```solidity
+bytes32 projectId,
+string category,
+bytes32 fingerprint,
+bytes32 treeHash,
+string ref,
+uint256 effortHours
+```
+
+### Registration Steps
+
+<Steps>
+  <Step title="Go to EAS Explorer">
+    Visit [base.easscan.org/schema/create](https://base.easscan.org/schema/create)
+  </Step>
+  <Step title="Connect Wallet">
+    Connect the same wallet you'll use for SESHAT
+  </Step>
+  <Step title="Enter Schema">
+    Paste the schema definition above
+  </Step>
+  <Step title="Set Resolver">
+    Leave resolver as `0x0000...0000` (no resolver)
+  </Step>
+  <Step title="Register">
+    Submit the transaction (~$0.01 on Base)
+  </Step>
+  <Step title="Copy UID">
+    Copy the resulting Schema UID and add to your `.env`
+  </Step>
+</Steps>
+
+## Complete Example
+
+```bash .env
+# ===========================================
+# SESHAT Configuration
+# ===========================================
+
+# Blockchain (Required)
+ETH_PRIVATE_KEY=0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+EAS_SCHEMA_UID=0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890
+
+# Git Host (Required)
+GIT_HOST_API_URL=https://api.github.com
+GIT_HOST_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# Obsidian (Required)
+OBSIDIAN_ROOT=/Users/julien/Documents/Research
+
+# Database
+DB_PATH=./data/seshat.db
+
+# Logging
+LOG_LEVEL=info
+
+# ===========================================
+# Optional: Reinforced Proof Chain
+# ===========================================
+
+# RFC 3161 Timestamps
+ENABLE_TSA=true
+TSA_URL=https://freetsa.org/tsr
+
+# IPFS Storage (encrypted)
+ENABLE_IPFS=true
+NFT_STORAGE_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+# Post-Quantum Signatures
+ENABLE_PQC=true
+PQC_LEVEL=87
+```
+
+## Docker Configuration
+
+When running via Docker, pass environment variables:
+
+```bash
+docker run -d \
+  -e ETH_PRIVATE_KEY=0x... \
+  -e EAS_SCHEMA_UID=0x... \
+  -e GIT_HOST_API_URL=https://api.github.com \
+  -e GIT_HOST_TOKEN=ghp_... \
+  -e OBSIDIAN_ROOT=/vault \
+  -v /path/to/vault:/vault:ro \
+  -v /path/to/data:/data \
+  ghcr.io/menezis-ai/seshat-mcp:latest
+```
+
+Or use a `.env` file:
+
+```bash
+docker run -d --env-file .env \
+  -v /path/to/vault:/vault:ro \
+  ghcr.io/menezis-ai/seshat-mcp:latest
+```

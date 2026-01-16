@@ -1,0 +1,100 @@
+---
+title: 'IPFS Storage'
+description: 'Encrypted backup on Filecoin via nft.storage'
+---
+
+## Overview
+
+SESHAT can backup your bundles to **IPFS/Filecoin** via nft.storage. Data is **AES-256-GCM encrypted** before upload, ensuring your code remains private.
+
+## Configuration
+
+```bash
+ENABLE_IPFS=true
+NFT_STORAGE_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+Get your free token at [nft.storage](https://nft.storage).
+
+## Encryption
+
+Your data is encrypted **before** upload:
+
+```
+ETH_PRIVATE_KEY
+    ↓ HKDF(salt="seshat-ipfs-encryption-v1")
+AES-256-GCM Key
+    ↓
+Encrypted Bundle → IPFS
+```
+
+### Why Encrypt?
+
+IPFS is **public by default**. Anyone with the CID can download content. Encryption ensures:
+
+- Only you can decrypt (with ETH key)
+- Code remains confidential
+- IPFS provides availability, not privacy
+
+## IPFS_PROOF.json
+
+When enabled, bundles include:
+
+```json
+{
+  "version": "1.0.0",
+  "timestamp": "2026-01-16T12:00:00Z",
+  "ipfs": {
+    "cid": "bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi",
+    "gateway_url": "https://nftstorage.link/ipfs/bafybei...",
+    "size_bytes": 524288
+  },
+  "encryption": {
+    "algorithm": "AES-256-GCM",
+    "iv": "base64...",
+    "key_derivation": {
+      "function": "HKDF-SHA256",
+      "salt": "seshat-ipfs-encryption-v1",
+      "info": "aes-256-gcm"
+    }
+  },
+  "content_hash": "sha512:abc123..."
+}
+```
+
+## Decryption
+
+To decrypt a backup:
+
+```typescript
+import { decryptFromIPFS } from 'seshat-mcp';
+
+const data = await decryptFromIPFS(
+  'bafybei...',  // CID
+  ethPrivateKey  // Your ETH key
+);
+```
+
+## Benefits
+
+| Feature | Description |
+|---------|-------------|
+| **Redundancy** | Filecoin provides long-term storage |
+| **Availability** | Content-addressed, globally accessible |
+| **Integrity** | CID = hash of content |
+| **Privacy** | AES-256-GCM encryption |
+
+<Tip>
+  Even if your local storage fails, you can recover from IPFS using your ETH key.
+</Tip>
+
+## Storage Limits
+
+nft.storage free tier:
+- **5GB** total storage
+- Unlimited retrievals
+- Filecoin deals for persistence
+
+<Info>
+  For large projects, consider upgrading to nft.storage paid plans or self-hosting IPFS.
+</Info>

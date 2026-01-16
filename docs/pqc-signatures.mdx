@@ -1,0 +1,106 @@
+---
+title: 'Post-Quantum Signatures'
+description: 'ANSSI-compliant hybrid cryptography'
+---
+
+## Why Post-Quantum?
+
+Quantum computers threaten current cryptographic algorithms. A sufficiently powerful quantum computer could break ECDSA signatures, potentially allowing attackers to forge historical attestations.
+
+SESHAT implements **ANSSI-compliant hybrid signatures** combining classical and post-quantum algorithms.
+
+## ANSSI Requirements
+
+The French National Cybersecurity Agency (ANSSI) recommends:
+
+- **Hybrid approach**: Classical + PQC combined
+- **Timeline**: 2027 no PQC = no qualification, 2030 mandatory
+- **Algorithms**: ML-KEM-1024 / ML-DSA-87 (NIST Level 5)
+
+## Implementation
+
+SESHAT uses **hybrid ECDSA + ML-DSA**:
+
+```
+Signature = ECDSA(data) || ML-DSA(data)
+```
+
+Both signatures must verify for the attestation to be valid.
+
+## Security Levels
+
+| Level | Algorithm | NIST Level | Security | Use Case |
+|-------|-----------|------------|----------|----------|
+| 44 | ML-DSA-44 | 2 | 128-bit | Fast, standard security |
+| 65 | ML-DSA-65 | 3 | 192-bit | Balanced |
+| **87** | ML-DSA-87 | 5 | 256-bit | Maximum security (default) |
+
+Configure via environment:
+```bash
+ENABLE_PQC=true
+PQC_LEVEL=87
+```
+
+## Signature File
+
+When `ENABLE_PQC=true`, `bundle_release` generates `SIGNATURE.pqc.json`:
+
+```json
+{
+  "version": "1.0.0",
+  "timestamp": "2026-01-16T12:00:00Z",
+  "data_hash": "sha512:abc123...",
+  "signatures": {
+    "ecdsa": {
+      "algorithm": "secp256k1",
+      "signature": "0x...",
+      "public_key": "0x..."
+    },
+    "ml_dsa": {
+      "algorithm": "ML-DSA-87",
+      "nist_level": 5,
+      "signature": "base64...",
+      "public_key": "base64..."
+    }
+  },
+  "compliance": {
+    "standard": "ANSSI-hybrid-PQC",
+    "classical_algorithm": "ECDSA-secp256k1",
+    "pqc_algorithm": "ML-DSA-87",
+    "nist_security_level": 5,
+    "security_bits": "256-bit"
+  }
+}
+```
+
+## Key Derivation
+
+ML-DSA keys are **deterministically derived** from your ETH private key using HKDF:
+
+```
+HKDF(ETH_PRIVATE_KEY, salt="seshat-mldsa87-v1", info="ml-dsa-87-keypair")
+  → ML-DSA seed
+  → ML-DSA keypair
+```
+
+This means:
+- No separate key management
+- Keys can be regenerated from ETH key
+- Consistent across reinstalls
+
+<Warning>
+  Protect your ETH private key. It derives both ECDSA and ML-DSA keys.
+</Warning>
+
+## Verification
+
+To verify a hybrid signature:
+
+1. **Extract** both signatures from SIGNATURE.pqc.json
+2. **Verify ECDSA** with standard tools (ethers.js, etc.)
+3. **Verify ML-DSA** with `@noble/post-quantum`
+4. **Both must pass** for valid attestation
+
+<Info>
+  Future SESHAT versions will include a verification tool for easy signature checking.
+</Info>

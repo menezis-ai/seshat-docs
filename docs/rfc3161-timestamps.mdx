@@ -1,0 +1,79 @@
+---
+title: 'RFC 3161 Timestamps'
+description: 'ISO-certified timestamps via FreeTSA'
+---
+
+## Overview
+
+RFC 3161 defines a protocol for trusted timestamps from a Time Stamping Authority (TSA). SESHAT integrates with **FreeTSA**, providing ISO/IEC 18014-2 certified timestamps.
+
+## Why TSA Timestamps?
+
+While blockchain provides timestamps, RFC 3161 adds:
+
+| Feature | Blockchain | RFC 3161 |
+|---------|------------|----------|
+| Standard | Custom | ISO/IEC 18014-2 |
+| Legal acceptance | Growing | Established |
+| Verification | On-chain | Offline possible |
+| Independence | Crypto ecosystem | Traditional PKI |
+
+**Belt and suspenders**: Use both for maximum legal protection.
+
+## Configuration
+
+```bash
+ENABLE_TSA=true
+TSA_URL=https://freetsa.org/tsr  # Default
+```
+
+## How It Works
+
+<Steps>
+  <Step title="Hash Prepared">
+    The Merkle root of your bundle is computed.
+  </Step>
+  <Step title="Request Sent">
+    ASN.1 DER-encoded TimeStampReq sent to TSA.
+  </Step>
+  <Step title="Token Received">
+    TSA returns signed TimeStampResp (.tsr file).
+  </Step>
+  <Step title="Stored">
+    TIMESTAMP.tsr included in bundle.
+  </Step>
+</Steps>
+
+## Verification
+
+Verify with OpenSSL:
+
+```bash
+# Download FreeTSA certificate chain
+curl -O https://freetsa.org/files/cacert.pem
+curl -O https://freetsa.org/files/tsa.crt
+
+# Verify timestamp
+openssl ts -verify \
+  -in TIMESTAMP.tsr \
+  -data PROOF_CHAIN.json \
+  -CAfile cacert.pem \
+  -untrusted tsa.crt
+```
+
+Expected output:
+```
+Verification: OK
+```
+
+## FreeTSA Details
+
+- **Provider**: FreeTSA.org
+- **Standard**: RFC 3161 / ISO/IEC 18014-2
+- **Cost**: Free
+- **Accuracy**: Synchronized to UTC
+- **Certificate**: Publicly verifiable
+
+<Info>
+  FreeTSA timestamps are legally recognized in most jurisdictions that accept electronic timestamps.
+</Info>

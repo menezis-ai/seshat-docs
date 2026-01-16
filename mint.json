@@ -1,0 +1,96 @@
+{
+  "$schema": "https://mintlify.com/schema.json",
+  "name": "SESHAT",
+  "logo": {
+    "dark": "/logo/seshat-dark.svg",
+    "light": "/logo/seshat-light.svg"
+  },
+  "favicon": "/favicon.svg",
+  "colors": {
+    "primary": "#6366F1",
+    "light": "#818CF8",
+    "dark": "#4F46E5",
+    "anchors": {
+      "from": "#6366F1",
+      "to": "#8B5CF6"
+    }
+  },
+  "topbarLinks": [
+    {
+      "name": "GitHub",
+      "url": "https://github.com/menezis-ai/seshat-mcp"
+    }
+  ],
+  "topbarCtaButton": {
+    "name": "npm install",
+    "url": "https://www.npmjs.com/package/seshat-mcp"
+  },
+  "tabs": [
+    {
+      "name": "Documentation",
+      "url": "docs"
+    },
+    {
+      "name": "API Reference",
+      "url": "api"
+    }
+  ],
+  "anchors": [
+    {
+      "name": "GitHub",
+      "icon": "github",
+      "url": "https://github.com/menezis-ai/seshat-mcp"
+    },
+    {
+      "name": "npm",
+      "icon": "npm",
+      "url": "https://www.npmjs.com/package/seshat-mcp"
+    }
+  ],
+  "navigation": [
+    {
+      "group": "Getting Started",
+      "pages": [
+        "introduction",
+        "quickstart",
+        "configuration"
+      ]
+    },
+    {
+      "group": "Core Concepts",
+      "pages": [
+        "docs/proof-chain",
+        "docs/attestations",
+        "docs/legal-deposit"
+      ]
+    },
+    {
+      "group": "MCP Tools",
+      "pages": [
+        "api/status",
+        "api/certify-research",
+        "api/seal",
+        "api/bundle-release"
+      ]
+    },
+    {
+      "group": "Security",
+      "pages": [
+        "docs/pqc-signatures",
+        "docs/rfc3161-timestamps",
+        "docs/ipfs-storage"
+      ]
+    }
+  ],
+  "footerSocials": {
+    "github": "https://github.com/menezis-ai/seshat-mcp"
+  },
+  "modeToggle": {
+    "default": "dark"
+  },
+  "feedback": {
+    "thumbsRating": true,
+    "suggestEdit": true,
+    "raiseIssue": true
+  }
+}

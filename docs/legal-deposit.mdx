@@ -1,0 +1,81 @@
+---
+title: 'Legal Deposit'
+description: 'Creating evidence bundles for copyright registration'
+---
+
+## What is Legal Deposit?
+
+Legal deposit is the process of registering your creative work with an official authority to establish copyright. SESHAT generates bundles that meet the requirements of most copyright registration services.
+
+## Supported Services
+
+| Service | Region | Website |
+|---------|--------|---------|
+| SafeCreative | International | [safecreative.org](https://safecreative.org) |
+| INPI | France | [inpi.fr](https://www.inpi.fr) |
+| USPTO | USA | [uspto.gov](https://www.uspto.gov) |
+| EUIPO | Europe | [euipo.europa.eu](https://euipo.europa.eu) |
+
+## Bundle Contents
+
+The `bundle_release` tool generates:
+
+### Source Archive
+Complete source code at the tagged version, preserving directory structure.
+
+### RD_REPORT.md
+R&D hours breakdown for tax credit applications (CIR/CII in France).
+
+### PROOF_CHAIN.json
+All attestation UIDs forming the proof chain, with Merkle root linking everything together.
+
+### MANIFEST.json
+SHA-512 hashes of every file for integrity verification.
+
+### Optional: TIMESTAMP.tsr
+RFC 3161 timestamp token from FreeTSA (ISO/IEC 18014-2 certified).
+
+### Optional: SIGNATURE.pqc.json
+ANSSI-compliant post-quantum signature for future-proof verification.
+
+## Workflow
+
+<Steps>
+  <Step title="Continuous Certification">
+    Throughout development, certify research and seal PRs.
+  </Step>
+  <Step title="Tag Release">
+    Create a git tag when ready for registration.
+  </Step>
+  <Step title="Generate Bundle">
+    ```text
+    Generate legal bundle for project "X" tag "v1.0.0"
+    ```
+  </Step>
+  <Step title="Upload to Service">
+    Upload the complete bundle to your chosen registration service.
+  </Step>
+  <Step title="Store Receipts">
+    Keep the registration receipts alongside your local bundle.
+  </Step>
+</Steps>
+
+## Legal Considerations
+
+<Warning>
+  SESHAT provides **evidence of creation**, not legal advice. Consult an IP attorney for specific legal questions.
+</Warning>
+
+The blockchain attestations prove:
+- **When** content existed (timestamp)
+- **What** the content was (fingerprint)
+- **Who** attested it (wallet address)
+
+They do **not** prove:
+- Originality (that you created it first)
+- Ownership (that you have rights)
+- Validity (that it's legally protectable)
+
+<Tip>
+  Combine SESHAT with traditional copyright registration for maximum protection.
+</Tip>

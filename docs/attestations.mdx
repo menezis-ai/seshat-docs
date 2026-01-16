@@ -1,0 +1,79 @@
+---
+title: 'Attestations'
+description: 'EAS attestations on Base L2'
+---
+
+## Ethereum Attestation Service
+
+SESHAT uses **EAS (Ethereum Attestation Service)** on **Base L2** for creating immutable attestations. EAS is an open-source protocol for making, verifying, and revoking on-chain attestations.
+
+## Why Base L2?
+
+| Factor | Ethereum L1 | Base L2 |
+|--------|-------------|---------|
+| Cost per attestation | ~$5-50 | ~$0.001 |
+| Confirmation time | ~15 min | ~2 sec |
+| Security | Native | Inherited from L1 |
+| Decentralization | High | Medium |
+
+Base provides the **best balance** of cost, speed, and security for high-volume attestations.
+
+## Schema
+
+SESHAT uses a custom EAS schema:
+
+```solidity
+bytes32 projectId,      // Keccak256 of project name
+string category,        // "research", "pr", "tag", "release", "bundle"
+bytes32 fingerprint,    // SHA-512 hash of content
+bytes32 treeHash,       // Git tree hash (for code)
+string ref,             // Reference (file path, PR number, tag name)
+uint256 effortHours     // R&D hours (×100 for decimals)
+```
+
+## Attestation Lifecycle
+
+<Steps>
+  <Step title="Content Created">
+    You write research notes or code
+  </Step>
+  <Step title="Hash Generated">
+    SHA-512 fingerprint computed locally
+  </Step>
+  <Step title="Transaction Signed">
+    Your wallet signs the attestation
+  </Step>
+  <Step title="On-Chain Recording">
+    Attestation stored on Base L2
+  </Step>
+  <Step title="Local Ledger Update">
+    SQLite records the attestation for querying
+  </Step>
+</Steps>
+
+## Verification
+
+Every attestation can be verified:
+
+```
+https://base.easscan.org/attestation/view/{EAS_UID}
+```
+
+This shows:
+- Schema used
+- Attester address (your wallet)
+- Timestamp
+- Decoded data (fingerprint, project, etc.)
+
+## Cost Estimation
+
+| Operation | Gas | Cost (ETH) | Cost (USD) |
+|-----------|-----|------------|------------|
+| Single attestation | ~80,000 | 0.00001 | ~$0.002 |
+| Batch (10) | ~400,000 | 0.00005 | ~$0.01 |
+
+With 0.01 ETH (~$20), you can make **~1,000 attestations**.
+
+<Tip>
+  The `status` tool shows your remaining attestation capacity based on wallet balance.
+</Tip>

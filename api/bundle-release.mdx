@@ -1,0 +1,195 @@
+---
+title: 'bundle_release'
+description: 'Generate legal deposit bundles'
+api: 'MCP bundle_release'
+---
+
+## Overview
+
+The `bundle_release` tool generates a complete evidence package for legal deposit. This bundle can be uploaded to copyright registration services like SafeCreative, INPI, or USPTO.
+
+<Info>
+  This is the culmination of your proof chain - a legally defensible package proving creation and authorship.
+</Info>
+
+## Parameters
+
+<ParamField path="project" type="string" required>
+  Project ID as configured in SESHAT.
+</ParamField>
+
+<ParamField path="tag" type="string" required>
+  Git tag for the release (e.g., `v1.0.0`).
+
+  <Warning>
+    The tag must exist in your repository. Create it with `git tag` before bundling.
+  </Warning>
+</ParamField>
+
+## Bundle Contents
+
+The generated bundle includes:
+
+| File | Description |
+|------|-------------|
+| `{project}_{tag}_source.zip` | Complete source archive at tag |
+| `RD_REPORT.md` | R&D hours summary for tax credits |
+| `PROOF_CHAIN.json` | All attestation UIDs with Merkle root |
+| `MANIFEST.json` | SHA-512 hashes of all files |
+
+### Optional Files (if enabled)
+
+| File | Requires | Description |
+|------|----------|-------------|
+| `TIMESTAMP.tsr` | `ENABLE_TSA=true` | RFC 3161 timestamp token |
+| `IPFS_PROOF.json` | `ENABLE_IPFS=true` | IPFS CID and encryption details |
+| `SIGNATURE.pqc.json` | `ENABLE_PQC=true` | Post-quantum hybrid signature |
+
+## Response
+
+```json
+{
+  "project": "my-project",
+  "tag": "v1.0.0",
+  "bundle_path": "/exports/my-project_v1.0.0/",
+  "files": [
+    "my-project_v1.0.0_source.zip",
+    "RD_REPORT.md",
+    "PROOF_CHAIN.json",
+    "MANIFEST.json",
+    "TIMESTAMP.tsr",
+    "IPFS_PROOF.json",
+    "SIGNATURE.pqc.json"
+  ],
+  "merkle_root": "sha512:abc123...",
+  "total_hours": 156.5,
+  "attestation_count": 42,
+  "eas_uid": "0x...",
+  "tx_hash": "0x..."
+}
+```
+
+## Generated Files
+
+### RD_REPORT.md
+
+```markdown
+# R&D Report - my-project v1.0.0
+
+## Summary
+- **Total Hours**: 156.5
+- **Period**: 2025-06-01 to 2026-01-16
+- **Attestation Count**: 42
+
+## Hours by Class
+| Class | Hours | Percentage |
+|-------|-------|------------|
+| S - Strategic | 45.0 | 28.8% |
+| A - Advanced | 78.5 | 50.2% |
+| C - Common | 33.0 | 21.0% |
+
+## Certified Notes
+| Date | File | Hours | Class | EAS UID |
+|------|------|-------|-------|---------|
+| 2026-01-15 | research/ml-integration.md | 4.0 | S | 0x1234... |
+| ... | ... | ... | ... | ... |
+```
+
+### PROOF_CHAIN.json
+
+```json
+{
+  "version": "1.0.0",
+  "project": "my-project",
+  "tag": "v1.0.0",
+  "generated_at": "2026-01-16T12:00:00Z",
+  "merkle_root": {
+    "algorithm": "sha512",
+    "full": "abc123...",
+    "short": "abc123"
+  },
+  "attestations": [
+    {
+      "category": "research",
+      "fingerprint": "sha512:...",
+      "eas_uid": "0x...",
+      "tx_hash": "0x...",
+      "timestamp": "2026-01-15T10:00:00Z"
+    }
+  ],
+  "bundle_attestation": {
+    "eas_uid": "0x...",
+    "tx_hash": "0x..."
+  }
+}
+```
+
+### MANIFEST.json
+
+```json
+{
+  "files": [
+    {
+      "path": "src/index.ts",
+      "sha512": "abc123...",
+      "size": 4521
+    }
+  ],
+  "total_files": 68,
+  "total_size": 398765
+}
+```
+
+## Workflow
+
+<Steps>
+  <Step title="Ensure all PRs sealed">
+    Verify recent PRs are attested before bundling.
+  </Step>
+  <Step title="Create and seal tag">
+    ```bash
+    git tag v1.0.0
+    git push origin v1.0.0
+    ```
+    Then seal the tag with the `seal` tool.
+  </Step>
+  <Step title="Generate bundle">
+    ```text
+    Generate legal bundle for project "my-project" tag "v1.0.0"
+    ```
+  </Step>
+  <Step title="Upload to registry">
+    Upload the bundle to SafeCreative, INPI, or your chosen service.
+  </Step>
+</Steps>
+
+## Use Cases
+
+<AccordionGroup>
+  <Accordion title="Copyright Registration">
+    Upload the complete bundle to SafeCreative or equivalent. The PROOF_CHAIN.json provides verifiable timestamps.
+  </Accordion>
+  <Accordion title="R&D Tax Credits">
+    Use RD_REPORT.md as supporting documentation for CIR/CII applications. Blockchain timestamps prove the work timeline.
+  </Accordion>
+  <Accordion title="Patent Prior Art">
+    The bundle establishes priority dates for inventions. The Merkle root links all evidence together.
+  </Accordion>
+  <Accordion title="Legal Disputes">
+    In case of IP disputes, the bundle provides cryptographically verifiable proof of creation dates.
+  </Accordion>
+</AccordionGroup>
+
+## Agentic Recommendations
+
+The agent should **recommend bundle generation** when the user mentions:
+
+- "release", "version", "deploy"
+- "copyright", "patent", "trademark"
+- "legal deposit", "SafeCreative", "INPI", "USPTO"
+- "proof of creation", "prior art"
+- "tax credit", "CIR", "CII"
+
+<Tip>
+  **Best practice**: Generate a bundle for every major release. Store bundles in multiple locations.
+</Tip>

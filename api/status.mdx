@@ -1,0 +1,178 @@
+---
+title: 'status'
+description: 'Check SESHAT system health'
+api: 'MCP status'
+---
+
+## Overview
+
+The `status` tool provides a comprehensive health check of your SESHAT installation. **Always call this first** before performing any operations.
+
+<Info>
+  This tool is the entry point for the agentic experience. It helps you understand the current state before taking action.
+</Info>
+
+## Parameters
+
+<ParamField path="verbose" type="boolean" default="false">
+  If `true`, include detailed per-project statistics and configuration.
+</ParamField>
+
+## Response
+
+```json
+{
+  "wallet": {
+    "address": "0x1234...5678",
+    "balance_eth": "0.05",
+    "balance_usd": 100,
+    "remaining_attestations": 50000
+  },
+  "git_host": {
+    "status": "connected",
+    "url": "https://api.github.com"
+  },
+  "database": {
+    "status": "healthy",
+    "total_records": 142,
+    "by_project": {
+      "my-project": 100,
+      "other-project": 42
+    },
+    "by_category": {
+      "research": 80,
+      "pr": 50,
+      "tag": 12
+    }
+  },
+  "last_attestation": "2026-01-16T10:30:00Z",
+  "projects": [
+    {
+      "id": "my-project",
+      "name": "My Project",
+      "has_repo": true,
+      "has_vault": true,
+      "has_git_host": true
+    }
+  ]
+}
+```
+
+## Response Fields
+
+<ResponseField name="wallet" type="object">
+  Ethereum wallet information.
+
+  <Expandable title="properties">
+    <ResponseField name="address" type="string">
+      Public wallet address
+    </ResponseField>
+    <ResponseField name="balance_eth" type="string">
+      ETH balance on Base L2
+    </ResponseField>
+    <ResponseField name="balance_usd" type="number">
+      Estimated USD value
+    </ResponseField>
+    <ResponseField name="remaining_attestations" type="number">
+      Estimated attestations possible with current balance
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="git_host" type="object">
+  Git host connectivity status.
+
+  <Expandable title="properties">
+    <ResponseField name="status" type="string">
+      `connected`, `disconnected`, or `not_configured`
+    </ResponseField>
+    <ResponseField name="url" type="string">
+      Configured API URL
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="database" type="object">
+  Local SQLite ledger statistics.
+</ResponseField>
+
+<ResponseField name="last_attestation" type="string">
+  ISO timestamp of the most recent attestation
+</ResponseField>
+
+<ResponseField name="projects" type="array">
+  List of configured projects (only with `verbose: true`)
+</ResponseField>
+
+## Warnings
+
+The agent should warn the user if:
+
+<Warning>
+  **Low balance**: If `wallet.balance_eth` < 0.01 ETH, warn that fewer than ~1000 attestations remain.
+</Warning>
+
+<Warning>
+  **Git host disconnected**: If `git_host.status` is not `connected`, PR and release sealing will fail.
+</Warning>
+
+## Examples
+
+### Basic Health Check
+
+<CodeGroup>
+```text MCP Prompt
+Check SESHAT status
+```
+
+```json Response
+{
+  "wallet": {
+    "address": "0xABC...123",
+    "balance_eth": "0.15",
+    "remaining_attestations": 150000
+  },
+  "git_host": {
+    "status": "connected"
+  },
+  "database": {
+    "status": "healthy",
+    "total_records": 42
+  }
+}
+```
+</CodeGroup>
+
+### Verbose Mode
+
+<CodeGroup>
+```text MCP Prompt
+Check SESHAT status with verbose mode enabled
+```
+
+```json Response
+{
+  "wallet": { ... },
+  "git_host": { ... },
+  "database": { ... },
+  "projects": [
+    {
+      "id": "seshat-mcp",
+      "name": "SESHAT MCP",
+      "has_repo": true,
+      "has_vault": true,
+      "has_git_host": true
+    }
+  ]
+}
+```
+</CodeGroup>
+
+## When to Use
+
+| Scenario | Action |
+|----------|--------|
+| Session start | Always check status first |
+| Before bulk certification | Verify wallet has sufficient balance |
+| After errors | Check connectivity and database health |
+| Before release bundle | Ensure all systems operational |

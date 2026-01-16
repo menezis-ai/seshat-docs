@@ -1,0 +1,180 @@
+---
+title: 'seal'
+description: 'Seal git artifacts with blockchain attestations'
+api: 'MCP seal'
+---
+
+## Overview
+
+The `seal` tool creates immutable blockchain attestations for git artifacts. It's the universal sealing mechanism for all code-related proofs.
+
+## Parameters
+
+<ParamField path="project" type="string" required>
+  Project ID as configured in SESHAT.
+</ParamField>
+
+<ParamField path="type" type="string" required>
+  Type of artifact to seal.
+
+  | Type | Description |
+  |------|-------------|
+  | `commit` | Specific git commit |
+  | `pr` | Merged pull request |
+  | `tag` | Git tag (version) |
+  | `release` | GitHub/GitLab release |
+</ParamField>
+
+<ParamField path="ref" type="string" required>
+  Reference to the artifact.
+
+  | Type | Ref Format | Example |
+  |------|------------|---------|
+  | `commit` | SHA | `abc1234` |
+  | `pr` | PR number | `42` |
+  | `tag` | Tag name | `v1.0.0` |
+  | `release` | Release tag | `v1.0.0` |
+</ParamField>
+
+## Response
+
+```json
+{
+  "project": "my-project",
+  "type": "pr",
+  "ref": "42",
+  "commit": "abc1234567890",
+  "tree_hash": "sha512:def456...",
+  "fingerprint": "sha512:789abc...",
+  "eas_uid": "0x1234567890abcdef...",
+  "tx_hash": "0xabcdef1234567890...",
+  "timestamp": "2026-01-16T10:30:00Z",
+  "metadata": {
+    "title": "Add new feature",
+    "author": "julien",
+    "merged_at": "2026-01-16T10:00:00Z"
+  }
+}
+```
+
+## Seal Types
+
+### Commit
+
+Seal a specific commit. Use sparingly - prefer PRs for development flow.
+
+```text
+Seal commit "abc1234" for project "my-project"
+```
+
+<Info>
+  Commits are rarely sealed individually. Most workflows use PRs or tags.
+</Info>
+
+### Pull Request
+
+Seal a merged PR with full metadata. **Most common for development.**
+
+```text
+Seal PR 42 for project "my-project"
+```
+
+<Warning>
+  The PR must be merged. Attempting to seal an open PR will fail.
+</Warning>
+
+The attestation includes:
+- Merge commit SHA
+- Tree hash at merge point
+- PR title and description
+- Author and merger info
+- Merge timestamp
+
+### Tag
+
+Seal a version tag. **Use for milestones and releases.**
+
+```text
+Seal tag "v1.0.0" for project "my-project"
+```
+
+Tags represent stable points in your codebase. Sealing a tag proves:
+- Exact code state at that version
+- Timestamp of tag creation
+- All content at that point
+
+### Release
+
+Seal a GitHub/GitLab release (includes release notes).
+
+```text
+Seal release "v1.0.0" for project "my-project"
+```
+
+Releases add:
+- Release notes
+- Associated assets
+- Publication timestamp
+
+## Workflow Examples
+
+### After Merging a PR
+
+<Steps>
+  <Step title="Merge the PR">
+    Complete code review and merge on your git host.
+  </Step>
+  <Step title="Seal the PR">
+    ```text
+    Seal PR 42 for project "my-project" as type "pr"
+    ```
+  </Step>
+  <Step title="Verify">
+    Check the EAS UID on [base.easscan.org](https://base.easscan.org)
+  </Step>
+</Steps>
+
+### Creating a Release
+
+<Steps>
+  <Step title="Create git tag">
+    ```bash
+    git tag v1.0.0
+    git push origin v1.0.0
+    ```
+  </Step>
+  <Step title="Seal the tag">
+    ```text
+    Seal tag "v1.0.0" for project "my-project"
+    ```
+  </Step>
+  <Step title="Generate bundle (optional)">
+    ```text
+    Generate legal bundle for tag "v1.0.0"
+    ```
+  </Step>
+</Steps>
+
+## Error Handling
+
+| Error | Cause | Solution |
+|-------|-------|----------|
+| `PR not merged` | Attempting to seal open PR | Wait for merge |
+| `Already sealed` | Duplicate attestation | Safe to ignore |
+| `Git host not configured` | Missing credentials | Check config |
+| `Tag not found` | Invalid tag reference | Verify tag exists |
+
+## Agentic Recommendations
+
+The agent should **proactively recommend sealing** when:
+
+| User says... | Agent should... |
+|--------------|-----------------|
+| "I just merged a PR" | Suggest sealing it |
+| "Feature is complete" | Suggest sealing the PR and/or tagging |
+| "Time for a release" | Suggest tag + seal + bundle workflow |
+| "We hit milestone X" | Suggest creating and sealing a tag |
+
+<Tip>
+  **Best practice**: Seal every merged PR for a continuous, verifiable proof chain.
+</Tip>

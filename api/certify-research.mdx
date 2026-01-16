@@ -1,0 +1,186 @@
+---
+title: 'certify_research'
+description: 'Certify Obsidian research notes on blockchain'
+api: 'MCP certify_research'
+---
+
+## Overview
+
+The `certify_research` tool scans your Obsidian vault for research notes and anchors them on the blockchain. Each note is hashed with SHA-512 and attested via EAS on Base L2.
+
+<Info>
+  This tool is essential for R&D tax credits (CIR/CII). It provides timestamped proof of research hours.
+</Info>
+
+## Parameters
+
+<ParamField path="project" type="string" required>
+  Project ID to certify notes for. Must match the `project` field in note frontmatter.
+</ParamField>
+
+<ParamField path="since" type="string" default="7 days ago">
+  ISO date string. Only certify notes modified after this date.
+</ParamField>
+
+<ParamField path="dry_run" type="boolean" default="false">
+  If `true`, preview what would be certified without creating attestations.
+
+  <Tip>
+    **Always use `dry_run: true` first** to review before committing to blockchain.
+  </Tip>
+</ParamField>
+
+## Obsidian Note Format
+
+Notes must have YAML frontmatter with these required fields:
+
+```yaml
+---
+project: my-project      # Must match the project parameter
+date: 2026-01-16         # Research date
+hours: 2.5               # Effort in hours
+class: S                 # S=Strategic, A=Advanced, C=Common
+status: reviewed         # Must NOT be "draft"
+---
+
+# Research Content
+
+Your research notes here...
+```
+
+### Class Levels
+
+| Class | Description | Tax Credit Multiplier |
+|-------|-------------|----------------------|
+| **S** | Strategic - Novel research, breakthrough | Highest |
+| **A** | Advanced - Complex problem solving | Medium |
+| **C** | Common - Standard development | Base |
+
+<Warning>
+  Notes with `status: draft` are automatically skipped. Change to `reviewed` when ready to certify.
+</Warning>
+
+## Response
+
+```json
+{
+  "project": "my-project",
+  "certified": 5,
+  "skipped": 2,
+  "total_hours": 12.5,
+  "notes": [
+    {
+      "file": "research/2026-01-16-feature-analysis.md",
+      "fingerprint": "sha512:abc123...",
+      "hours": 2.5,
+      "class": "S",
+      "eas_uid": "0x1234...",
+      "tx_hash": "0xabcd..."
+    }
+  ],
+  "skipped_notes": [
+    {
+      "file": "research/draft-idea.md",
+      "reason": "status is draft"
+    }
+  ]
+}
+```
+
+## Workflow
+
+<Steps>
+  <Step title="Preview with dry_run">
+    ```text
+    Certify research for project "my-project" with dry_run enabled
+    ```
+
+    Review the list of notes that will be certified.
+  </Step>
+  <Step title="Check Hours">
+    Verify `total_hours` is reasonable. Flag if > 40h/week.
+  </Step>
+  <Step title="Certify">
+    ```text
+    Certify research for project "my-project"
+    ```
+
+    Remove `dry_run` to create actual attestations.
+  </Step>
+  <Step title="Verify">
+    Check the returned `eas_uid` values on [base.easscan.org](https://base.easscan.org)
+  </Step>
+</Steps>
+
+## Examples
+
+### Preview Certification
+
+<CodeGroup>
+```text MCP Prompt
+Certify research notes for project "seshat" since 2026-01-01 with dry_run enabled
+```
+
+```json Response
+{
+  "project": "seshat",
+  "certified": 0,
+  "would_certify": 8,
+  "total_hours": 24.5,
+  "dry_run": true,
+  "notes": [
+    {
+      "file": "research/mcp-architecture.md",
+      "hours": 4,
+      "class": "S",
+      "status": "would_certify"
+    }
+  ]
+}
+```
+</CodeGroup>
+
+### Actual Certification
+
+<CodeGroup>
+```text MCP Prompt
+Certify research notes for project "seshat"
+```
+
+```json Response
+{
+  "project": "seshat",
+  "certified": 8,
+  "total_hours": 24.5,
+  "notes": [
+    {
+      "file": "research/mcp-architecture.md",
+      "fingerprint": "sha512:e3b0c44298fc1c149afbf4c8...",
+      "eas_uid": "0x1234567890abcdef...",
+      "tx_hash": "0xabcdef1234567890..."
+    }
+  ]
+}
+```
+</CodeGroup>
+
+## Warnings
+
+<Warning>
+  **High hours**: If `total_hours` > 40 per week, the agent should flag this as unusually high.
+</Warning>
+
+<Warning>
+  **Missing frontmatter**: Notes without required frontmatter fields are skipped with an error reason.
+</Warning>
+
+<Warning>
+  **Already certified**: Notes with the same fingerprint are skipped (duplicate protection).
+</Warning>
+
+## Best Practices
+
+1. **Certify weekly** to maintain a continuous proof chain
+2. **Use meaningful class levels** - S for breakthroughs, C for routine work
+3. **Keep detailed notes** - they're part of your legal evidence
+4. **Review before certifying** - `dry_run` is your friend

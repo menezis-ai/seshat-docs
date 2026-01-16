@@ -1,0 +1,214 @@
+---
+title: 'Quickstart'
+description: 'Get SESHAT running in 5 minutes'
+---
+
+## Installation
+
+<Tabs>
+  <Tab title="npm">
+    ```bash
+    npm install -g seshat-mcp
+    ```
+  </Tab>
+  <Tab title="From Source">
+    ```bash
+    git clone https://github.com/menezis-ai/seshat-mcp.git
+    cd seshat-mcp
+    npm install
+    npm run build
+    ```
+  </Tab>
+  <Tab title="Docker">
+    ```bash
+    docker pull ghcr.io/menezis-ai/seshat-mcp:latest
+    ```
+  </Tab>
+</Tabs>
+
+## Prerequisites
+
+<Steps>
+  <Step title="Ethereum Wallet">
+    You need an Ethereum wallet with a small amount of ETH on **Base L2** for attestation fees (~$0.001 per attestation).
+
+    <Tip>
+      Create a dedicated wallet for SESHAT. Never use your main wallet.
+    </Tip>
+  </Step>
+  <Step title="EAS Schema">
+    Register your attestation schema on EAS (one-time setup). See [Configuration](/configuration) for details.
+  </Step>
+  <Step title="Git Host Token">
+    Generate an API token for your git host (GitHub, GitLab, or Forgejo) with `read:repo` scope.
+  </Step>
+</Steps>
+
+## Configuration
+
+Create a `.env` file with your credentials:
+
+```bash
+# Blockchain (Required)
+ETH_PRIVATE_KEY=0x...your_private_key...
+EAS_SCHEMA_UID=0x...your_schema_uid...
+
+# Git Host (Required)
+GIT_HOST_API_URL=https://api.github.com
+GIT_HOST_TOKEN=ghp_...your_token...
+
+# Obsidian (Required for research certification)
+OBSIDIAN_ROOT=/path/to/your/vault
+
+# Database
+DB_PATH=./data/seshat.db
+```
+
+<Warning>
+  Never commit your `.env` file. Add it to `.gitignore`.
+</Warning>
+
+## MCP Client Setup
+
+### Claude Desktop
+
+Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "seshat": {
+      "command": "seshat",
+      "args": ["serve"],
+      "env": {
+        "ETH_PRIVATE_KEY": "0x...",
+        "EAS_SCHEMA_UID": "0x...",
+        "GIT_HOST_API_URL": "https://api.github.com",
+        "GIT_HOST_TOKEN": "ghp_...",
+        "OBSIDIAN_ROOT": "/path/to/vault"
+      }
+    }
+  }
+}
+```
+
+### Claude Code
+
+```json
+{
+  "mcpServers": {
+    "seshat": {
+      "command": "npx",
+      "args": ["seshat-mcp"],
+      "env": {
+        "ETH_PRIVATE_KEY": "0x...",
+        "EAS_SCHEMA_UID": "0x..."
+      }
+    }
+  }
+}
+```
+
+## First Steps
+
+### 1. Check System Status
+
+```bash
+seshat status
+```
+
+Or via MCP:
+```
+Use the status tool to check SESHAT health
+```
+
+<Info>
+  The `status` tool shows wallet balance, git host connectivity, and database statistics.
+</Info>
+
+### 2. Initialize a Project
+
+```bash
+seshat init
+```
+
+This interactive wizard helps you configure:
+- Project ID and name
+- Local repository path
+- Obsidian vault subdirectory
+- Git host integration
+
+### 3. Certify Research Notes
+
+First, ensure your Obsidian notes have proper frontmatter:
+
+```yaml
+---
+project: my-project
+date: 2026-01-16
+hours: 2.5
+class: S
+status: reviewed
+---
+```
+
+Then certify:
+```
+Use certify_research with project "my-project" and dry_run true
+```
+
+<Tip>
+  Always use `dry_run: true` first to preview what will be certified.
+</Tip>
+
+### 4. Seal a Merged PR
+
+```
+Use seal with project "my-project", type "pr", ref "42"
+```
+
+### 5. Generate Legal Bundle
+
+For a release:
+```
+Use bundle_release with project "my-project", tag "v1.0.0"
+```
+
+This creates:
+- `*_source.zip` - Complete source archive
+- `RD_REPORT.md` - R&D hours summary
+- `PROOF_CHAIN.json` - All attestation UIDs
+- `MANIFEST.json` - File hashes
+
+## What's Next?
+
+<CardGroup cols={2}>
+  <Card
+    title="Core Concepts"
+    icon="book"
+    href="/docs/proof-chain"
+  >
+    Understand how the proof chain works
+  </Card>
+  <Card
+    title="MCP Tools Reference"
+    icon="code"
+    href="/api/status"
+  >
+    Explore all available tools
+  </Card>
+  <Card
+    title="Security Features"
+    icon="shield"
+    href="/docs/pqc-signatures"
+  >
+    Enable post-quantum signatures
+  </Card>
+  <Card
+    title="Tax Credits Guide"
+    icon="file-invoice-dollar"
+    href="/guides/cir-tax-credit"
+  >
+    Use SESHAT for R&D tax credits
+  </Card>
+</CardGroup>
