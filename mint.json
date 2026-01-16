@@ -86,7 +86,14 @@
     "github": "https://github.com/menezis-ai/seshat-mcp"
   },
   "modeToggle": {
-    "default": "dark"
+    "default": "dark",
+    "isHidden": true
+  },
+  "background": {
+    "style": "gradient"
+  },
+  "styling": {
+    "eyebrow": "breadcrumb"
   },
   "feedback": {
     "thumbsRating": true,
