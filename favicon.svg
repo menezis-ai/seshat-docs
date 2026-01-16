@@ -1,0 +1,16 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Shield background -->
+  <path d="M16 2L30 8V18C30 26 16 30 16 30C16 30 2 26 2 18V8L16 2Z" fill="url(#faviconGradient)" opacity="0.2"/>
+  <!-- Seven-pointed star (Seshat symbol) -->
+  <g transform="translate(16, 14)">
+    <path d="M0 -9L2 -2.7L8.5 -2.7L3.2 1.4L5.3 7.6L0 3.6L-5.3 7.6L-3.2 1.4L-8.5 -2.7L-2 -2.7Z" fill="url(#faviconGradient)"/>
+  </g>
+  <!-- Chain link -->
+  <rect x="13" y="22" width="6" height="3" rx="1" fill="url(#faviconGradient)" opacity="0.7"/>
+  <defs>
+    <linearGradient id="faviconGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#818CF8"/>
+      <stop offset="100%" stop-color="#6366F1"/>
+    </linearGradient>
+  </defs>
+</svg>
